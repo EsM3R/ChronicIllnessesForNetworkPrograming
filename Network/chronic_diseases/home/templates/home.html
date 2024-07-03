@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Trackables</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .navbar {
+            overflow: hidden;
+            background-color: #333;
+        }
+        .form-container {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            margin-right: 10px;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        canvas {
+            margin-top: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .chart-description {
+            text-align: left;
+            margin-top: 10px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1 style="color:white;text-align:center;">Hastalık Bilgilendirme Sitesi</h1>
+    </div>  
+    <form action="{% url 'form_view' %}" method="post">
+        {% csrf_token %}
+        <div class="form-container">
+            <input type="text" placeholder="Hastalık adını buraya yazın..." id="trackable_name" name="trackable_name" required>
+            <button type="submit">Sorgula</button>
+        </div>
+    </form>
+    
+    <div style="position: relative;">
+        <p class="chart-description">
+            Cinsiyet Dağılımı Grafiği: Bu grafik, kullanıcıların cinsiyetlerine göre dağılımını gösterir. Mavi renk erkekleri, pembe renk ise kadınları temsil eder. Veri setinde erkek ve kadın kullanıcı sayılarının karşılaştırılması yapılmaktadır.
+        </p>
+        <canvas id="genderChart"></canvas>
+    </div>
+    <div style="position: relative;">
+        <p class="chart-description">
+            Tedavi Dağılımı Grafiği: Bu grafik, kullanıcıların aldıkları tedavilerin dağılımını gösterir. Her bir çubuk, belirli bir tedavinin kullanıcılar arasındaki yaygınlığını temsil eder. Tedavi adı çubukların altında görüntülenirken, yüksekliği ise tedavinin sıklığını belirtir.
+        </p>
+        <canvas id="treatmentChart"></canvas>
+    </div>
+    <div style="position: relative;">
+        <p class="chart-description">
+            Hava Durumu Dağılımı Grafiği: Bu grafik, kullanıcıların bildirdikleri hava durumlarının dağılımını gösterir. Renkli bölgeler, belirli bir hava durumu durumunu temsil ederken, dilimlerin büyüklüğü o hava durumunun sıklığını belirtir. Örneğin, büyük bir dilim gökyüzünün açık olduğunu, küçük bir dilim ise yağmurlu olduğunu gösterebilir.
+        </p>
+        <canvas id="weatherChart"></canvas>
+    </div>
+
+    <div style="position: relative;">
+        <p class="chart-description">
+            Etiket Dağılımı Grafiği: Bu grafik, kullanıcıların ekledikleri etiketlerin dağılımını gösterir. Her bir dilim belirli bir etiketi temsil ederken, dilimlerin büyüklüğü o etiketin sıklığını gösterir. En büyük dilime sahip etiket, en yaygın kullanılan etiketi temsil eder.
+        </p>
+        <canvas id="tagChart"></canvas>
+    </div>
+    <div style="position: relative;">
+        <p class="chart-description">
+            Durum Dağılımı Grafiği: Bu grafik, kullanıcıların sağlık durumlarının dağılımını gösterir. Renkli bölgeler, belirli bir sağlık durumunu temsil ederken, dilimlerin büyüklüğü o sağlık durumunun sıklığını belirtir. Örneğin, büyük bir dilim iyi sağlık durumunu, küçük bir dilim ise kötü sağlık durumunu gösterebilir.
+        </p>
+        <canvas id="conditionChart"></canvas>
+    </div>
+    <script>
+        const genderCtx = document.getElementById('genderChart');
+        new Chart(genderCtx, {
+            type: 'pie',
+            data: {
+                labels: ["Erkek", "Kadın"],
+                datasets: [{
+                    data: [{{ male }}, {{ female }}],
+                    borderWidth: 1
+                }]
+            }
+        });
+    </script>
+
+    <script>
+        const treatmentCtx = document.getElementById('treatmentChart');
+        new Chart(treatmentCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ treatment_labels | safe }},
+                datasets: [{
+                    data: {{ treatment_data | safe }},
+                    borderWidth: 1
+                }]
+            }
+        });
+    </script>
+
+    <script>
+        const wearherCtx = document.getElementById('weatherChart');
+        new Chart(wearherCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ weather_labels | safe }},
+                datasets: [{
+                    data: {{ weather_data | safe }},
+                    borderWidth: 1
+                }]
+            }
+        });
+    </script>
+
+    <script>
+        const tagCtx = document.getElementById('tagChart');
+        new Chart(tagCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ tag_labels | safe }},
+                datasets: [{
+                    data: {{ tag_data | safe }},
+                    borderWidth: 1
+                }]
+            }
+        });
+    </script>
+
+    <script>
+        const conditionCtx = document.getElementById('conditionChart');
+        new Chart(conditionCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ condition_labels | safe }},
+                datasets: [{
+                    data: {{ condition_data | safe }},
+                    borderWidth: 1
+                }]
+            }
+        });
+    </script>
+
+
+</body>
+</html>
